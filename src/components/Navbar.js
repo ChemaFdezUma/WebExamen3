@@ -13,7 +13,7 @@ const Navbar = () => {
         localStorage.setItem("picture", userObject.picture);
         localStorage.setItem("cargado", true);
 
-        await axios.post('http://localhost:5000/logConexiones', {
+        await axios.post('https://backexamenweb.vercel.app/logConexiones', {
             timestamp: new Date(),
             usuario: userObject.email,
             caducidad: new Date(userObject.exp * 1000),
@@ -27,7 +27,7 @@ const Navbar = () => {
             });
 
 
-        window.location.href = "http://localhost:3000/";
+        window.location.href = "https://web-examen3.vercel.app";
     }
 
 
@@ -68,7 +68,7 @@ const Navbar = () => {
                             {localStorage.getItem("cargado") ? <><a className='nombreInicioSesion '>Bienvenido {localStorage.getItem("name")}</a> 
                                                                 <button className='btn btn-danger' onClick={() => {
                                                                     localStorage.clear();
-                                                                    window.location.href = "http://localhost:3000/";}}>Cerrar sesion</button></>
+                                                                    window.location.href = "https://web-examen3.vercel.app/";}}>Cerrar sesion</button></>
                             : <div id="sigInDiv" className='googlePonerDerecha'></div>}
                         </div>
                     </div>
