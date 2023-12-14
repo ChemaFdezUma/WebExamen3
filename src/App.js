@@ -3,7 +3,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import axios from 'axios';
 import { useState } from "react";
-import L from 'leaflet';
 import { useEffect } from "react";
 import {Cloudinary} from "@cloudinary/url-gen";
 
