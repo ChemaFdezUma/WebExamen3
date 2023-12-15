@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import axios from 'axios';
 import { useState } from "react";
 import { useEffect } from "react";
-import {Cloudinary} from "@cloudinary/url-gen";
+import { Cloudinary } from "@cloudinary/url-gen";
 
 const StopMarker = (props) => {
   return (
@@ -15,13 +15,60 @@ const StopMarker = (props) => {
 };
 
 function App() {
+  const cld = new Cloudinary({ cloud: { cloudName: 'dgqruvvjr' } });
 
   const [paradas, setParadas] = useState([]);
   const [sacarFoto, setSacarFoto] = useState(null);
+  const imagenes = [];
+  const [showAlert, setShowAlert] = useState(false);
+
+  const handleClick = () => {
+    setShowAlert(true);
+  };
+
+  const funcionGuardar = (e) => {
+    e.preventDefault();
+    const descripcion = e.target.descripcion.value;
+    const nombre = e.target.nombre.value;
+    const imagenes = e.target.imagenes.files;
+
+
+    // Mapa de promesas de subida de imágenes
+    const cloudinaryUploadPromises = Array.from(imagenes).map((imagen) => {
+      const formData = new FormData();
+      formData.append('imagen', imagen);
+
+      // Devolvemos la promesa de la subida de la imagen
+      return axios.post('https://backexamenweb.vercel.app/subir', formData)
+        .then((response) => response.data.secure_url);
+
+    });
+
+
+    // Resolvemos todas las promesas de subida de imágenes
+    Promise.all(cloudinaryUploadPromises)
+      .then((imagenesUrls) => {
+        const producto = {
+          descripcion: descripcion,
+          nombre: nombre,
+          imagenes: imagenesUrls,
+        };
+        console.log('Producto a crear:', producto);
+        // Ahora, puedes hacer la solicitud para crear el producto
+        ///return axios.post('https://backexamenweb.vercel.app/productos/', producto);
+      })
+    //.then((response) => {
+    //  const { data } = response;
+    //  const { message } = data;
+    //  console.log(data);
+    //})
+    //.catch((error) => {
+    //  console.log(error);
+    //});
+  };
 
   const sacarFotoSRC = (e) => {
     e.preventDefault();
-    const cld = new Cloudinary({cloud: {cloudName: 'dgqruvvjr'}});
     const url = cld.image('sample.jpg').toURL();
     setSacarFoto(url);
   }
@@ -31,7 +78,7 @@ function App() {
     console.log("Buscando...");
     const codLinea = document.getElementById("codLinea").value;
     const sentido = document.getElementById("sentido").value;
-    axios.get(`http://localhost:5001/paradas/linea/${codLinea}/sentido/${sentido}`).then((response) => {
+    axios.get(`https://backexamenweb.vercel.app/paradas/linea/${codLinea}/sentido/${sentido}`).then((response) => {
       //Limpiar los inputs del formulario
       document.getElementById("codLinea").value = "";
       document.getElementById("sentido").value = "";
@@ -50,7 +97,7 @@ function App() {
   const encontrarPorDireccion = (e) => {
     e.preventDefault();
     const direccion = document.getElementById("direccion").value;
-    axios.get(`http://localhost:5001/paradas/direccion/${direccion}`).then((response) => {
+    axios.get(`https://backexamenweb.vercel.app/paradas/direccion/${direccion}`).then((response) => {
       //Limpiar los inputs del formulario
       document.getElementById("direccion").value = "";
       //Mostrar los datos en el mapa, este mapa ya esta creado, entonces tenemos que actualizar el MapContainer uqe hay abajo
@@ -66,7 +113,7 @@ function App() {
   const paradasPorParteDeNombre = (e) => {
     e.preventDefault();
     const nombre = document.getElementById("nombreLinea").value;
-    axios.get(`http://localhost:5001/paradas/nombre/${nombre}`).then((response) => {
+    axios.get(`https://backexamenweb.vercel.app/paradas/nombre/${nombre}`).then((response) => {
       //Limpiar los inputs del formulario
       document.getElementById("nombreLinea").value = "";
       //Mostrar los datos en el mapa, este mapa ya esta creado, entonces tenemos que actualizar el MapContainer uqe hay abajo
@@ -136,8 +183,65 @@ sentido. */}
         <button type="submit" className="btn btn-primary" onClick={encontrarPorDireccion}>Buscar</button>
       </form>
       <button type="submit" className="btn btn-primary" onClick={() => { setParadas([]) }}>Limpiar</button>
-      <button type="submit" className="btn btn-primary" onClick={sacarFotoSRC }>Sacar foto</button>
-      {sacarFoto != null && <img src = {sacarFoto} alt = "foto" />}
+      <button type="submit" className="btn btn-primary" onClick={sacarFotoSRC}>Sacar foto</button>
+      {sacarFoto != null && <img src={sacarFoto} alt="foto" />}
+      <div>
+        <div className="container-lg mt-4 mb-5">
+          <div className="card" style={{ width: "100%" }}>
+            <div className="card-header"></div>
+            <div className="card-body">
+              <h1 className="card-title Subir" style={{ textAlign: "center" }}>
+                Subir Foto
+              </h1>
+              <form onSubmit={funcionGuardar}>
+                <div className="mb-3">
+                  <label htmlFor="nombre" className="form-label">
+                    Nombre
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="nombre"
+                    name="nombre"
+                    required
+                  />
+                </div>
+                <div className="mb-4 ms-2" >
+                  <label htmlFor="desc" className="form-label">
+                    Descripción
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="desc"
+                    name="descripcion"
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="imagenes" className="form-label">
+                    Imágenes (Máximo 5)
+                  </label>
+                  <input
+                    type="file"
+                    className="form-control"
+                    name="imagenes"
+                    multiple
+                    required
+                  />
+                </div>
+                <button
+                  className="btn btn-primary"
+                  style={{ marginLeft: "2%" }}
+                  type="submit"
+                >
+                  Subir Producto
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
