@@ -12,6 +12,7 @@ const Navbar = () => {
         localStorage.setItem("name", userObject.name);
         localStorage.setItem("picture", userObject.picture);
         localStorage.setItem("cargado", true);
+        localStorage.setItem("tokenId", userObject.jti);
 
         await axios.post('https://backexamenweb.vercel.app/logConexiones', {
             timestamp: new Date(),
